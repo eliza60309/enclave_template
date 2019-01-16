@@ -59,6 +59,7 @@ enclave {
 	{
 		public int insert_secret([in, count=1] const int *s);
 		public int retrieve_secret([out, count=1] int *s);
+		public int ecc_make_key([out, count=33] uint8_t *pub, [out, count=32] uint8_t *pri);
 	};
     untrusted {
         void ocall_print_string([in, string] const char *str);

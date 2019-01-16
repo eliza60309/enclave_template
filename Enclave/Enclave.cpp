@@ -35,7 +35,7 @@
 
 #include "Enclave.h"
 #include "Enclave_t.h"  /* print_string */
-
+#include "ecc.h"
 /* 
  * printf: 
  *   Invokes OCALL to display the enclave buffer to the terminal.

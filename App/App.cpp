@@ -42,7 +42,8 @@ using namespace std;
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
-
+//#include "../Enclave/ecc.h"
+#define ECC_BYTES 32
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
@@ -201,9 +202,9 @@ int SGX_CDECL main(int argc, char *argv[])
     //edger8r_function_attributes();
     
     /* Utilize trusted libraries */
-    ecall_libc_functions();
-    ecall_libcxx_functions();
-    ecall_thread_functions();
+    //ecall_libc_functions();
+    //ecall_libcxx_functions();
+    //ecall_thread_functions();
 
 
     while(1)
@@ -211,7 +212,7 @@ int SGX_CDECL main(int argc, char *argv[])
 		int a;
 		cout << "1: Insert secret" << endl;
 		cout << "2: Retrieve secret" << endl;
-		cout << "3: Exit" << endl;
+		cout << "3: Generate Scep 256r1 key" << endl;
 		cout << "--> ";
 		cin >> a;
 		int ptr[1];
@@ -226,10 +227,35 @@ int SGX_CDECL main(int argc, char *argv[])
 		else if(a == 2)
 		{
 			retrieve_secret(global_eid, ptr, s);
-			cout << "Secret: " << s[0] << " " << secret << endl;
+			cout << "Secret: " << s[0] << " " << endl;
 		}
-		else if(a == 3)break;
-		
+		else if(a == 3)
+		{
+			uint8_t private_key[ECC_BYTES];
+			uint8_t public_key[ECC_BYTES + 1];
+			ecc_make_key(global_eid, ptr, public_key, private_key);
+			for(int i = 0; i < ECC_BYTES; i++)
+			{
+				int hi = private_key[i] / 16;
+				int lo = private_key[i] % 16;
+				if(hi >= 10)cout << (char)('A' + hi - 10);
+				else cout << hi;
+				if(lo >= 10)cout << (char)('A' + lo - 10);
+				else cout << lo;
+			}
+			cout << endl;
+			for(int i = 0; i < ECC_BYTES + 1; i++)
+			{
+				int hi = public_key[i] / 16;
+				int lo = public_key[i] % 16;
+				if(hi >= 10)cout << (char)('A' + hi - 10);
+				else cout << hi;
+				if(lo >= 10)cout << (char)('A' + lo - 10);
+				else cout << lo;
+			}
+			cout << endl;
+		}
+		else if(a == 4)break;
 	}
 
 
