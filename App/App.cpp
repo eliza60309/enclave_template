@@ -269,7 +269,7 @@ int SGX_CDECL main(int argc, char *argv[])
 				else cout << lo;
 			}
 			cout << endl;
-			cout << ecdsa_verify(public_key, (uint8_t *)sha256(contract.c_str()).c_str(), (uint8_t *)signature) << endl;
+			cout << (ecdsa_verify(public_key, (uint8_t *)sha256(contract.c_str()).c_str(), (uint8_t *)signature)? "Verified signature": "Not verified signature") << endl;
 		}
 /*		else if(a == 3)
 		{
