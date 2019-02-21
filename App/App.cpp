@@ -43,8 +43,8 @@ using namespace std;
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
-//#include "../Enclave/ecc.h"
-#define ECC_BYTES 32
+#include "ecc.h"
+//#define ECC_BYTES 32
 #include "sha256.h"
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
@@ -233,30 +233,43 @@ int SGX_CDECL main(int argc, char *argv[])
 		}
 		else if(a == 3)
 		{
-			char public_key[33] = {};
+			uint8_t public_key[33] = {};
 			string contract;
-			cin >> contract;
-			if(make_key(global_eid, ptr, public_key))cout << "Key generated." << endl;
+			make_public_key(global_eid, ptr, public_key);
+			/*if(make_public_key(global_eid, ptr, (uint8_t *) public_key))cout << "Key generated." << endl;
 			else
 			{
 				cout << "Key generating failed!" << endl;
 				continue;
-			}
+			}*/
 			cout << "Enter contract: " << endl << "--> ";
 			cin >> contract;
-			if(insert_contract(global_eid, ptr, sha256(contract.c_str())))cout << "Contract imserted." << endl;
+			insert_contract(global_eid, ptr, sha256(contract.c_str()).c_str());
+			/*if(insert_contract(global_eid, ptr, sha256(contract.c_str()).c_str()))cout << "Contract imserted." << endl;
 			else
 			{
 				cout << "Contract inserting failed!" << endl;
 				continue;
-			}
+			}*/
 			char signature[64] = {};
-			if(sign_and_retrieve(signature))cout << "Contract signed." << endl;
+			sign_and_retrieve(global_eid, ptr, signature);
+			/*if(sign_and_retrieve(global_eid, ptr, signature))cout << "Contract signed." << endl;
 			else
 			{
 				cout << "Contract signing failed!" << endl;
 				continue;
+			}*/
+			for(int i = 0; i < ECC_BYTES + 1; i++)
+			{
+				int hi = public_key[i] / 16;
+				int lo = public_key[i] % 16;
+				if(hi >= 10)cout << (char)('A' + hi - 10);
+				else cout << hi;
+				if(lo >= 10)cout << (char)('A' + lo - 10);
+				else cout << lo;
 			}
+			cout << endl;
+			cout << ecdsa_verify(public_key, (uint8_t *)sha256(contract.c_str()).c_str(), (uint8_t *)signature) << endl;
 		}
 /*		else if(a == 3)
 		{
