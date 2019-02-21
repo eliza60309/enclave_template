@@ -30,6 +30,7 @@
  */
 
 #include <iostream>
+#include <string>
 using namespace std;
 #include <stdio.h>
 #include <string.h>
@@ -44,6 +45,7 @@ using namespace std;
 #include "Enclave_u.h"
 //#include "../Enclave/ecc.h"
 #define ECC_BYTES 32
+#include "sha256.h"
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
@@ -212,7 +214,7 @@ int SGX_CDECL main(int argc, char *argv[])
 		int a;
 		cout << "1: Insert secret" << endl;
 		cout << "2: Retrieve secret" << endl;
-		cout << "3: Generate Scep 256r1 key" << endl;
+		cout << "3: Generate Secp 256r1 key and sign" << endl;
 		cout << "--> ";
 		cin >> a;
 		int ptr[1];
@@ -230,6 +232,33 @@ int SGX_CDECL main(int argc, char *argv[])
 			cout << "Secret: " << s[0] << " " << endl;
 		}
 		else if(a == 3)
+		{
+			char public_key[33] = {};
+			string contract;
+			cin >> contract;
+			if(make_key(global_eid, ptr, public_key))cout << "Key generated." << endl;
+			else
+			{
+				cout << "Key generating failed!" << endl;
+				continue;
+			}
+			cout << "Enter contract: " << endl << "--> ";
+			cin >> contract;
+			if(insert_contract(global_eid, ptr, sha256(contract.c_str())))cout << "Contract imserted." << endl;
+			else
+			{
+				cout << "Contract inserting failed!" << endl;
+				continue;
+			}
+			char signature[64] = {};
+			if(sign_and_retrieve(signature))cout << "Contract signed." << endl;
+			else
+			{
+				cout << "Contract signing failed!" << endl;
+				continue;
+			}
+		}
+/*		else if(a == 3)
 		{
 			uint8_t private_key[ECC_BYTES];
 			uint8_t public_key[ECC_BYTES + 1];
@@ -254,7 +283,7 @@ int SGX_CDECL main(int argc, char *argv[])
 				else cout << lo;
 			}
 			cout << endl;
-		}
+		}*/
 		else if(a == 4)break;
 	}
 

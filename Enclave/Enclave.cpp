@@ -51,6 +51,8 @@ void printf(const char *fmt, ...)
 }
 
 int secret;
+uint8_t pri[32] = {};
+uint8_t hash[32] = {};
 
 int insert_secret(const int *s)
 {
@@ -61,4 +63,24 @@ int insert_secret(const int *s)
 int retrieve_secret(int *s)
 {
 	*s = secret;
+	return 0;
+}
+
+int insert_contract(const char *s)
+{
+	for(int i = 0; i < 32; i++)
+	{
+		hash[i] = s[i];
+	}
+	return 0;
+}
+
+int sign_and_retrieve(char *s)
+{
+	return ecdsa_sign(pri, hash, (uint8_t *)s);
+}
+
+int make_public_key(uint8_t *pub)
+{
+	return ecc_make_key(pub, pri);
 }
